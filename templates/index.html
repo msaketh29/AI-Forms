@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AI Form Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Lora:wght@400;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#ece7df; --sidebar:#f0ece6; --card:#faf8f5;
+  --border:#ddd8d0; --border2:#c8c0b4;
+  --accent:#3d3730; --accent2:#7c6f5e;
+  --btn:#d5cbbd; --ink:#2c2520;
+  --text:#1a1714; --muted:#8a7f74; --muted2:#b0a898;
+  --green:#2d6a4f; --green-bg:#e8f5ee;
+  --red:#c0392b; --red-bg:#fdf0ee;
+  --blue:#2563eb; --blue-bg:#eff6ff;
+  --amber:#92400e; --amber-bg:#fffbeb;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Lora',serif;min-height:100vh;display:flex;}
+
+/* ── SIDEBAR ── */
+.sidebar{position:fixed;left:0;top:0;width:200px;height:100vh;background:var(--sidebar);border-right:1px solid var(--border);padding:24px 16px;display:flex;flex-direction:column;gap:3px;z-index:10;}
+.sb-brand{display:flex;align-items:center;gap:8px;margin-bottom:24px;}
+.sb-icon{width:28px;height:28px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.9rem;color:#ece7df;flex-shrink:0;}
+.sb-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--ink);}
+.sb-link{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;font-size:.84rem;color:var(--accent2);cursor:pointer;transition:all .18s;border:1px solid transparent;user-select:none;}
+.sb-link:hover{background:var(--btn);color:var(--ink);}
+.sb-link.active{background:var(--accent);color:#ece7df;}
+.sb-badge{margin-left:auto;background:rgba(0,0,0,.15);font-family:'DM Mono',monospace;font-size:.6rem;padding:1px 6px;border-radius:100px;}
+.sb-link:not(.active) .sb-badge{background:var(--border2);color:var(--muted);}
+
+/* ── TOPBAR ── */
+.topbar{position:fixed;top:0;left:200px;right:0;height:54px;background:var(--sidebar);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;padding:0 28px;gap:12px;z-index:9;}
+.signin-btn{display:flex;align-items:center;gap:7px;background:var(--accent);color:#ece7df;border:none;padding:8px 20px;border-radius:9px;font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;transition:all .2s;}
+.signin-btn:hover{background:#2a251f;transform:translateY(-1px);}
+.user-area{position:relative;}
+.user-pill{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--border);padding:5px 13px 5px 6px;border-radius:100px;cursor:pointer;transition:all .2s;}.user-pill.guest{background:var(--accent);border-color:var(--accent);padding:10px 22px;border-radius:10px;}
+.user-pill:hover{border-color:var(--accent2);}
+.u-av{width:30px;height:30px;border-radius:50%;background:var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:.72rem;color:var(--muted);flex-shrink:0;transition:background .2s;}
+.u-name{font-family:'Syne',sans-serif;font-size:.8rem;font-weight:600;color:var(--ink);}.user-pill.guest .u-name{color:#ece7df;font-size:.88rem;}.user-pill.guest .u-arr{color:#ece7df;}
+.u-arr{font-size:.65rem;color:var(--muted);}
+.user-dd{position:absolute;top:calc(100% + 10px);right:0;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;width:235px;box-shadow:0 8px 32px rgba(0,0,0,.13);display:none;z-index:300;}
+.user-dd.open{display:block;animation:fadeUp .18s ease;}
+.dd-top{display:flex;align-items:center;gap:10px;padding:8px 8px 12px;border-bottom:1px solid var(--border);margin-bottom:8px;}
+.dd-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#3d3730,#7c6f5e);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem;color:#fff;flex-shrink:0;}
+.dd-nm{font-family:'Syne',sans-serif;font-weight:700;font-size:.84rem;color:var(--ink);}
+.dd-em{font-size:.7rem;color:var(--muted);margin-top:1px;}
+.dd-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;font-size:.82rem;cursor:pointer;transition:all .15s;color:var(--accent2);}
+.dd-item:hover{background:var(--btn);color:var(--ink);}
+.dd-item.red:hover{background:var(--red-bg);color:var(--red);}
+
+/* ── MAIN ── */
+.main{margin-left:200px;padding-top:54px;flex:1;min-width:0;}
+.content{padding:36px 36px 60px;}
+.section{display:none;}
+.section.show{display:block;animation:fadeUp .25s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── GENERATE ── */
+.gen-center{text-align:center;padding:44px 0 32px;}
+.gen-h1{font-family:'Syne',sans-serif;font-size:clamp(1.9rem,4vw,3rem);font-weight:800;letter-spacing:-1.5px;line-height:1.08;color:var(--ink);margin-bottom:10px;}
+.gen-sub{color:var(--muted);font-size:.92rem;margin-bottom:28px;line-height:1.6;}
+.prompt-row{display:flex;justify-content:center;gap:10px;max-width:600px;margin:0 auto 18px;}
+.pinput{flex:1;padding:12px 15px;border-radius:10px;border:1px solid var(--border2);background:var(--card);font-family:'Lora',serif;font-size:.9rem;color:var(--ink);outline:none;transition:border-color .2s,box-shadow .2s;}
+.pinput:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(61,55,48,.1);}
+.gbtn{padding:12px 22px;border-radius:10px;border:none;background:var(--accent);color:#ece7df;font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:7px;}
+.gbtn:hover{background:#2a251f;transform:translateY(-1px);}
+.gbtn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:none;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.chips{display:flex;justify-content:center;flex-wrap:wrap;gap:7px;}
+.chip{padding:6px 14px;border-radius:100px;border:1px solid var(--border2);background:var(--card);font-family:'Lora',serif;font-size:.79rem;color:var(--accent2);cursor:pointer;transition:all .2s;}
+.chip:hover{border-color:var(--accent);color:var(--ink);background:var(--btn);}
+.form-wrap{margin-top:36px;display:flex;justify-content:center;padding-bottom:40px;}
+.fcard{width:390px;background:var(--card);padding:28px;border-radius:16px;border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,.07);display:flex;flex-direction:column;gap:14px;}
+.fcard-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--ink);margin-bottom:2px;}
+.fcard-sub{font-size:.8rem;color:var(--muted);margin-bottom:4px;}
+.fg{display:flex;flex-direction:column;}
+.fl{font-family:'Syne',sans-serif;font-weight:600;font-size:.71rem;text-transform:uppercase;letter-spacing:.07em;color:var(--accent2);margin-bottom:5px;display:block;}
+.fr{color:var(--red);margin-left:2px;}
+.fi,.fs,.fta{width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border2);background:white;font-family:'Lora',serif;font-size:.87rem;color:var(--ink);outline:none;transition:border-color .2s;-webkit-appearance:none;}
+.fi:focus,.fs:focus,.fta:focus{border-color:var(--accent);}
+.fi.err{border-color:var(--red);}
+.fta{resize:vertical;min-height:76px;}
+.sbtn{padding:12px;border:none;border-radius:10px;background:var(--accent);color:#ece7df;font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;margin-top:4px;transition:all .2s;}
+.sbtn:hover{background:#2a251f;}
+.form-toast{display:none;background:var(--green-bg);border:1px solid #a7d7c5;color:var(--green);padding:10px 13px;border-radius:8px;font-size:.82rem;text-align:center;margin-top:4px;}
+
+/* ── SECTION HEADER ── */
+.sec-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+.sec-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;letter-spacing:-.5px;color:var(--ink);}
+.sec-sub{color:var(--muted);font-size:.82rem;margin-top:4px;}
+.hd-btn{padding:9px 18px;border-radius:9px;border:none;background:var(--accent);color:#ece7df;font-family:'Syne',sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;transition:all .2s;}
+.hd-btn:hover{background:#2a251f;}
+
+/* ── TABLE CARD ── */
+.tcard{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.tbar{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.tbar-left{font-family:'Syne',sans-serif;font-weight:700;font-size:.76rem;color:var(--muted);}
+.tbar-left strong{color:var(--ink);}
+.search-wrap{display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 11px;}
+.search-wrap input{background:transparent;border:none;outline:none;font-family:'DM Mono',monospace;font-size:.73rem;color:var(--ink);width:160px;}
+.search-wrap input::placeholder{color:var(--muted);}
+table{width:100%;border-collapse:collapse;}
+thead{background:var(--bg);}
+th{padding:10px 16px;text-align:left;font-family:'Syne',sans-serif;font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--border);}
+td{padding:13px 16px;font-size:.83rem;border-bottom:1px solid rgba(0,0,0,.04);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(0,0,0,.016);}
+.t-id{font-family:'DM Mono',monospace;font-size:.73rem;color:var(--muted2);}
+.t-fnm{font-family:'Syne',sans-serif;font-weight:600;font-size:.83rem;line-height:1.4;}
+.t-prev{font-family:'DM Mono',monospace;font-size:.73rem;color:var(--accent2);background:var(--bg);border-radius:5px;padding:3px 8px;display:inline-block;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.t-time{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--muted);white-space:nowrap;line-height:1.6;}
+.pill{display:inline-flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:.64rem;padding:3px 10px;border-radius:100px;}
+.pill.ok{background:var(--green-bg);color:var(--green);}
+.pill.ok::before{content:'';width:5px;height:5px;background:var(--green);border-radius:50%;}
+.abtns{display:flex;gap:6px;flex-wrap:wrap;}
+.ab{padding:6px 13px;border-radius:7px;font-family:'Syne',sans-serif;font-weight:600;font-size:.72rem;cursor:pointer;border:1px solid;transition:all .18s;background:transparent;}
+.ab.view{border-color:#bfdbfe;color:var(--blue);background:var(--blue-bg);}
+.ab.view:hover{background:var(--blue);color:#fff;border-color:var(--blue);}
+.ab.edit{border-color:#fde68a;color:var(--amber);background:var(--amber-bg);}
+.ab.edit:hover{background:var(--amber);color:#fff;border-color:var(--amber);}
+.ab.del{border-color:#fecaca;color:var(--red);background:var(--red-bg);}
+.ab.del:hover{background:var(--red);color:#fff;border-color:var(--red);}
+.empty-msg{text-align:center;padding:40px;color:var(--muted);font-size:.85rem;}
+.pager{padding:11px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.pager-info{font-family:'DM Mono',monospace;font-size:.71rem;color:var(--muted);}
+.pager-btns{display:flex;gap:4px;}
+.pg{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--card);font-size:.75rem;cursor:pointer;color:var(--muted2);transition:all .18s;}
+.pg:hover{border-color:var(--accent);color:var(--ink);}
+.pg.active{background:var(--accent);color:#ece7df;border-color:var(--accent);}
+
+/* ── MY FORMS GRID ── */
+.forms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:14px;padding-bottom:40px;}
+.form-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;transition:all .22s;position:relative;overflow:hidden;}
+.form-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));transform:scaleX(0);transition:transform .25s;transform-origin:left;}
+.form-card:hover{border-color:var(--accent2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.1);}
+.form-card:hover::before{transform:scaleX(1);}
+.fc-title{font-family:'Syne',sans-serif;font-weight:700;margin-bottom:3px;font-size:.9rem;}
+.fc-name{font-family:'DM Mono',monospace;font-size:.63rem;color:var(--accent2);margin-bottom:8px;}
+.fc-meta{font-size:.72rem;color:var(--muted);margin-bottom:14px;}
+.fc-btns{display:flex;gap:6px;}
+.fc-btn{flex:1;padding:7px;border-radius:7px;font-family:'Syne',sans-serif;font-weight:600;font-size:.72rem;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--accent2);transition:all .2s;text-align:center;}
+.fc-btn:hover{border-color:var(--accent);color:var(--ink);}
+.fc-btn.pri{background:var(--accent);border-color:var(--accent);color:#ece7df;}
+.fc-btn.pri:hover{background:#2a251f;}
+
+/* ── MODALS ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(28,22,18,.55);backdrop-filter:blur(5px);z-index:400;align-items:center;justify-content:center;padding:20px;}
+.overlay.open{display:flex;animation:fadeUp .2s ease;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:20px;width:100%;max-width:500px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.mhd{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:1;}
+.mtitle{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:var(--ink);}
+.mbadge{font-family:'DM Mono',monospace;font-size:.66rem;padding:3px 10px;border-radius:100px;margin-left:8px;}
+.mbadge.ok{background:var(--green-bg);color:var(--green);}
+.mbadge.ed{background:var(--amber-bg);color:var(--amber);}
+.mclose{background:var(--bg);border:1px solid var(--border);color:var(--muted2);width:30px;height:30px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:all .2s;flex-shrink:0;}
+.mclose:hover{color:var(--ink);}
+.mbody{padding:20px 24px;}
+.m-row{display:flex;flex-direction:column;gap:4px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.m-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.m-key{font-family:'Syne',sans-serif;font-weight:600;font-size:.67rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);}
+.m-val{font-size:.88rem;color:var(--ink);background:var(--bg);border-radius:7px;padding:7px 11px;}
+.eg{margin-bottom:14px;}
+.el{font-family:'Syne',sans-serif;font-weight:600;font-size:.69rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:5px;}
+.ei,.es{width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border2);background:white;font-family:'Lora',serif;font-size:.88rem;color:var(--ink);outline:none;transition:border-color .2s;-webkit-appearance:none;}
+.ei:focus,.es:focus{border-color:var(--accent);}
+.mft{padding:14px 24px 20px;display:flex;gap:9px;border-top:1px solid var(--border);}
+.mfb{flex:1;padding:11px;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:.84rem;cursor:pointer;border:none;transition:all .2s;}
+.mfb.pri{background:var(--accent);color:#ece7df;}
+.mfb.pri:hover{background:#2a251f;}
+.mfb.sec{background:var(--bg);border:1px solid var(--border);color:var(--accent2);}
+.mfb.sec:hover{border-color:var(--accent);color:var(--ink);}
+
+/* ── AUTH MODAL ── */
+.auth-modal{background:#fff;border-radius:24px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.18);overflow:hidden;}
+.auth-header{padding:32px 32px 0;}
+.auth-brand{display:flex;align-items:center;gap:10px;margin-bottom:26px;}
+.auth-brand-icon{width:36px;height:36px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:1.05rem;color:#ece7df;}
+.auth-brand-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;color:#111;}
+.auth-tabs{display:flex;background:#f0efed;border-radius:12px;padding:4px;margin-bottom:26px;gap:4px;}
+.auth-tab{flex:1;padding:10px;border-radius:9px;font-family:'Syne',sans-serif;font-weight:700;font-size:.83rem;cursor:pointer;text-align:center;color:#888;transition:all .2s;border:none;background:transparent;}
+.auth-tab.active{background:#fff;color:#111;box-shadow:0 1px 6px rgba(0,0,0,.12);border-radius:9px;}
+.auth-body{padding:0 32px 32px;}
+.auth-field{margin-bottom:16px;}
+.auth-label{font-family:'Syne',sans-serif;font-weight:600;font-size:.75rem;color:#555;display:block;margin-bottom:7px;}
+.auth-input{width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid #e8e8e8;background:#f7f7f7;font-family:'Lora',serif;font-size:.92rem;color:#111;outline:none;transition:border-color .2s,box-shadow .2s,background .2s;}
+.auth-input:focus{border-color:#3d3730;background:#fff;box-shadow:0 0 0 3px rgba(61,55,48,.08);}
+.auth-input.err{border-color:var(--red);background:#fff;}
+.auth-err{font-size:.76rem;color:var(--red);margin-top:10px;margin-bottom:10px;padding:8px 10px;background:#fff0f0;border-radius:7px;display:none;font-family:'DM Mono',monospace;border:1px solid #fecaca;}
+.auth-err.show{display:block;}
+.auth-submit{width:100%;padding:14px;border-radius:12px;border:none;background:var(--accent);color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;transition:all .2s;margin-top:4px;letter-spacing:.01em;}
+.auth-submit:hover{background:#2a251f;transform:translateY(-1px);}
+.auth-submit:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.auth-footer{text-align:center;margin-top:18px;font-size:.78rem;color:#999;font-family:'DM Mono',monospace;}
+.auth-footer a{color:var(--accent);cursor:pointer;text-decoration:none;font-weight:700;}
+.auth-footer a:hover{text-decoration:underline;}
+
+/* Toast */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#ece7df;padding:11px 18px;border-radius:10px;font-family:'DM Mono',monospace;font-size:.76rem;z-index:999;display:none;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:320px;}
+.toast.show{display:block;animation:fadeUp .25s ease;}
+
+/* Locked state */
+.locked-banner{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:32px;text-align:center;margin-top:20px;}
+.locked-icon{font-size:2.5rem;margin-bottom:12px;}
+.locked-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--ink);margin-bottom:8px;}
+.locked-sub{font-size:.85rem;color:var(--muted);margin-bottom:18px;line-height:1.6;}
+.locked-btn{padding:10px 22px;border-radius:9px;border:none;background:var(--accent);color:#ece7df;font-family:'Syne',sans-serif;font-weight:700;font-size:.84rem;cursor:pointer;transition:all .2s;}
+.locked-btn:hover{background:#2a251f;}
+
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<div class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-icon">⚡</div>
+    <div class="sb-name">AI Form</div>
+  </div>
+  <div class="sb-link active" id="nav-gen" onclick="goTab('generate',this)">✦&nbsp; Generate Form</div>
+  <div class="sb-link" id="nav-sub" onclick="goTab('submissions',this)">
+    📬&nbsp; Submissions <span class="sb-badge" id="badge-subs">0</span>
+  </div>
+  <div class="sb-link" id="nav-frm" onclick="goTab('forms',this)">
+    📋&nbsp; My Forms <span class="sb-badge" id="badge-forms">0</span>
+  </div>
+  <div class="sb-link" id="nav-profile" onclick="goTab('profile',this)" style="margin-top:auto;">
+    👤&nbsp; Profile
+  </div>
+</div>
+
+<!-- ══ TOPBAR ══ -->
+<div class="topbar">
+  <div class="user-area">
+    <div class="user-pill guest" onclick="toggleDD()" id="main-pill">
+      <div class="u-av" id="u-av-text" style="display:none;">?</div>
+      <div class="u-name" id="u-pill-name">Sign In</div>
+      <div class="u-arr" id="u-arr">→</div>
+    </div>
+    <!-- Logged OUT dropdown -->
+    <div class="user-dd" id="udd-out">
+      <div class="dd-top" style="border-bottom:none;margin-bottom:0;padding-bottom:8px;">
+        <div class="dd-av" style="background:var(--border2);color:var(--muted);">?</div>
+        <div>
+          <div class="dd-nm" style="color:var(--muted);">Not signed in</div>
+          <div class="dd-em">Sign in to your account</div>
+        </div>
+      </div>
+      <div style="height:1px;background:var(--border);margin:8px 0;"></div>
+      <div class="dd-item" onclick="closeAllDD();openAuth('signin')">→ &nbsp;Sign In</div>
+      <div class="dd-item" onclick="closeAllDD();openAuth('signup')">✦ &nbsp;Create Account</div>
+    </div>
+    <!-- Logged IN dropdown -->
+    <div class="user-dd" id="udd-in" style="display:none;">
+      <div class="dd-top">
+        <div class="dd-av" id="dd-av-text">U</div>
+        <div>
+          <div class="dd-nm" id="dd-name">User</div>
+          <div class="dd-em" id="dd-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="097c7a6c7b496c64686065276a6664">[email&#160;protected]</a></div>
+        </div>
+      </div>
+      <div class="dd-item red" onclick="signOut()">✕ &nbsp;Sign Out</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="main"><div class="content">
+
+  <!-- GENERATE SECTION -->
+  <div id="sec-generate" class="section show">
+    <div class="gen-center">
+      <h1 class="gen-h1">Describe it.<br/>We'll build it.</h1>
+      <p class="gen-sub">Type any form in plain English and get a live working form instantly.</p>
+      <div class="prompt-row">
+        <input class="pinput" id="prompt-input"
+          placeholder="Ask anything..."
+          onkeydown="if(event.key==='Enter')doGenerate()"/>
+        <button class="gbtn" id="gen-btn" onclick="doGenerate()">
+          <span id="gen-txt">Generate</span>
+          <div class="spin" id="gen-spin"></div>
+        </button>
+      </div>
+      <div class="chips">
+        <span class="chip" onclick="setPrompt('Leave application form with start and end dates')">Leave Application</span>
+        <span class="chip" onclick="setPrompt('Employee onboarding form with team and designation')">Onboarding</span>
+        <span class="chip" onclick="setPrompt('Expense report form with category and amount')">Expense Report</span>
+        <span class="chip" onclick="setPrompt('Bug report form with priority and steps to reproduce')">Bug Report</span>
+        <span class="chip" onclick="setPrompt('Job application form with skills and experience level')">Job Application</span>
+      </div>
+    </div>
+    <div class="form-wrap" id="form-wrap" style="display:none">
+      <div class="fcard" id="form-card"></div>
+    </div>
+  </div>
+
+  <!-- SUBMISSIONS SECTION -->
+  <div id="sec-submissions" class="section">
+    <div id="subs-locked" class="locked-banner" style="display:none">
+      <div class="locked-icon">🔒</div>
+      <div class="locked-title">Sign in to view your Submissions</div>
+      <div class="locked-sub">Your submission history is private. Sign in to access and manage all your form submissions.</div>
+      <button class="locked-btn" onclick="openAuth('signin')">Sign In →</button>
+    </div>
+    <div id="subs-content">
+      <div class="sec-hd">
+        <div>
+          <div class="sec-title">Form Submissions</div>
+          <div class="sec-sub">View, edit or delete any submitted entry</div>
+        </div>
+        <button class="hd-btn" onclick="exportCSV()">⬇ Export CSV</button>
+      </div>
+      <div class="tcard">
+        <div class="tbar">
+          <div class="tbar-left">Total: <strong id="sub-count" style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--ink);">0</strong> <span style="font-size:.78rem;color:var(--muted);">submissions</span></div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <div class="search-wrap">🔍&nbsp;<input id="sub-search" placeholder="Search…" oninput="filterSubs()"/></div>
+            <select class="fs" id="form-filter" onchange="filterSubs()" style="padding:6px 10px;font-size:.75rem;border-radius:8px;border:1px solid var(--border2);background:var(--card);font-family:'Lora',serif;outline:none;">
+              <option value="">All Forms</option>
+            </select>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Sub ID</th><th>Form Name</th><th>Submitted Data</th><th>Submitted At</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="subs-tbody"><tr><td colspan="6" class="empty-msg">No submissions yet</td></tr></tbody>
+        </table>
+        <div class="pager">
+          <span class="pager-info" id="pager-info">Showing 0 entries</span>
+          <div class="pager-btns" id="pager-btns"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MY FORMS SECTION -->
+  <div id="sec-forms" class="section">
+    <div id="forms-locked" class="locked-banner" style="display:none">
+      <div class="locked-icon">🔒</div>
+      <div class="locked-title">Sign in to view My Forms</div>
+      <div class="locked-sub">Your forms are private to your account. Sign in to manage your AI-generated forms.</div>
+      <button class="locked-btn" onclick="openAuth('signin')">Sign In →</button>
+    </div>
+    <div id="forms-content">
+      <div class="sec-hd">
+        <div>
+          <div class="sec-title">My Forms</div>
+          <div class="sec-sub">All AI-generated forms saved in your account</div>
+        </div>
+        <button class="hd-btn" onclick="goTab('generate',document.getElementById('nav-gen'))">+ Generate New</button>
+      </div>
+      <div class="forms-grid" id="forms-grid">
+        <div style="color:var(--muted);font-size:.85rem;padding:20px 0;">No forms yet — generate one!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE SECTION -->
+  <div id="sec-profile" class="section">
+    <div id="profile-locked" class="locked-banner" style="display:none">
+      <div class="locked-icon">👤</div>
+      <div class="locked-title">Sign in to view your Profile</div>
+      <div class="locked-sub">Your profile information is tied to your account.</div>
+      <button class="locked-btn" onclick="openAuth('signin')">Sign In →</button>
+    </div>
+    <div id="profile-content" style="display:none">
+      <div class="sec-hd">
+        <div>
+          <div class="sec-title">My Profile</div>
+          <div class="sec-sub">Your account details</div>
+        </div>
+      </div>
+      <div style="max-width:480px;">
+        <div class="tcard" style="border-radius:16px;overflow:hidden;">
+          <div style="padding:28px;display:flex;align-items:center;gap:18px;border-bottom:1px solid var(--border);background:var(--card);">
+            <div id="prof-avatar" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#3d3730,#7c6f5e);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:#fff;flex-shrink:0;">U</div>
+            <div>
+              <div id="prof-name" style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--ink);">User Name</div>
+              <div id="prof-email" style="font-size:.8rem;color:var(--muted);margin-top:3px;font-family:'DM Mono',monospace;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e99c9a8c9ba98c84888085c78a8684">[email&#160;protected]</a></div>
+              <div id="prof-joined" style="font-size:.72rem;color:var(--muted2);margin-top:4px;font-family:'DM Mono',monospace;">Member since —</div>
+            </div>
+          </div>
+          <div style="padding:20px 24px;">
+            <div class="m-row">
+              <div class="m-key">Full Name</div>
+              <div class="m-val" id="prof-name-val">—</div>
+            </div>
+            <div class="m-row">
+              <div class="m-key">Email Address</div>
+              <div class="m-val" id="prof-email-val">—</div>
+            </div>
+            <div class="m-row" style="border-bottom:none;margin-bottom:0;padding-bottom:0;">
+              <div class="m-key">Account Stats</div>
+              <div style="display:flex;gap:12px;margin-top:6px;flex-wrap:wrap;">
+                <div onclick="goTab('forms',document.getElementById('nav-frm'))" style="flex:1;min-width:110px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:18px 12px;text-align:center;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)';this.style.background='var(--btn)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg)'">
+                  <div style="font-size:1.6rem;margin-bottom:6px;">📋</div>
+                  <div id="prof-forms-count" style="font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;color:var(--ink);line-height:1;">0</div>
+                  <div style="font-size:.72rem;color:var(--muted);margin-top:5px;font-family:'Syne',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Forms Created</div>
+                </div>
+                <div onclick="goTab('submissions',document.getElementById('nav-sub'))" style="flex:1;min-width:110px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:18px 12px;text-align:center;cursor:pointer;transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)';this.style.background='var(--btn)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg)'">
+                  <div style="font-size:1.6rem;margin-bottom:6px;">📬</div>
+                  <div id="prof-subs-count" style="font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;color:var(--ink);line-height:1;">0</div>
+                  <div style="font-size:.72rem;color:var(--muted);margin-top:5px;font-family:'Syne',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Submissions</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="padding:14px 24px 20px;border-top:1px solid var(--border);">
+            <button onclick="signOut()" style="padding:10px 20px;border-radius:9px;border:1px solid #fecaca;background:var(--red-bg);color:var(--red);font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='var(--red)';this.style.color='#fff'" onmouseout="this.style.background='var(--red-bg)';this.style.color='var(--red)'">✕ Sign Out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div></div>
+
+<!-- ══ AUTH MODAL ══ -->
+<div id="auth-modal" class="overlay">
+  <div class="auth-modal">
+    <div class="auth-header">
+      <div class="auth-brand">
+        <div class="auth-brand-icon">⚡</div>
+        <div class="auth-brand-name">AI Form</div>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-signin" onclick="switchAuthTab('signin')">Sign In</button>
+        <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Sign Up</button>
+      </div>
+    </div>
+    <div class="auth-body">
+      <!-- SIGN IN -->
+      <div id="signin-form">
+        <div class="auth-field">
+          <label class="auth-label">Email</label>
+          <input class="auth-input" id="si-email" type="email" placeholder="Enter your email" onkeydown="if(event.key==='Enter')doSignIn()"/>
+        </div>
+        <div class="auth-field">
+          <label class="auth-label">Password</label>
+          <input class="auth-input" id="si-password" type="password" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doSignIn()"/>
+        </div>
+        <div class="auth-err" id="si-err"></div>
+        <button class="auth-submit" id="si-btn" onclick="doSignIn()">Sign In</button>
+        <div class="auth-footer">No account? <a onclick="switchAuthTab('signup')">Sign Up</a></div>
+      </div>
+      <!-- SIGN UP -->
+      <div id="signup-form" style="display:none">
+        <div class="auth-field">
+          <label class="auth-label">Full Name</label>
+          <input class="auth-input" id="su-name" type="text" placeholder="Your name" onkeydown="if(event.key==='Enter')doSignUp()"/>
+        </div>
+        <div class="auth-field">
+          <label class="auth-label">Email</label>
+          <input class="auth-input" id="su-email" type="email" placeholder="Your email" onkeydown="if(event.key==='Enter')doSignUp()"/>
+        </div>
+        <div class="auth-field">
+          <label class="auth-label">Password</label>
+          <input class="auth-input" id="su-password" type="password" placeholder="Min 6 characters" onkeydown="if(event.key==='Enter')doSignUp()"/>
+        </div>
+        <div class="auth-err" id="su-err"></div>
+        <button class="auth-submit" id="su-btn" onclick="doSignUp()">Create Account</button>
+        <div class="auth-footer">Have account? <a onclick="switchAuthTab('signin')">Sign In</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VIEW MODAL ══ -->
+<div id="view-modal" class="overlay">
+  <div class="modal">
+    <div class="mhd">
+      <div style="display:flex;align-items:center;">
+        <div class="mtitle" id="view-modal-title">Submission Details</div>
+        <span class="mbadge ok">submitted</span>
+      </div>
+      <button class="mclose" onclick="closeModal('view-modal')">✕</button>
+    </div>
+    <div class="mbody" id="view-modal-body"></div>
+    <div class="mft">
+      <button class="mfb sec" id="view-edit-btn">✏ Edit this entry</button>
+      <button class="mfb pri" onclick="closeModal('view-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EDIT MODAL ══ -->
+<div id="edit-modal" class="overlay">
+  <div class="modal">
+    <div class="mhd">
+      <div style="display:flex;align-items:center;">
+        <div class="mtitle" id="edit-modal-title">Edit Submission</div>
+        <span class="mbadge ed">editing</span>
+      </div>
+      <button class="mclose" onclick="closeModal('edit-modal')">✕</button>
+    </div>
+    <div class="mbody" id="edit-modal-body"></div>
+    <div class="mft">
+      <button class="mfb sec" onclick="closeModal('edit-modal')">Cancel</button>
+      <button class="mfb pri" id="edit-save-btn">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FILL FORM MODAL ══ -->
+<div id="fill-modal" class="overlay">
+  <div class="modal">
+    <div class="mhd">
+      <div class="mtitle" id="fill-modal-title">Fill Form</div>
+      <button class="mclose" onclick="closeModal('fill-modal')">✕</button>
+    </div>
+    <div class="mbody" id="fill-modal-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast-el"></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ═══════════════════════ STATE ═══════════════════════
+let allSubs = [], filteredSubs = [], currentPage = 1;
+const PAGE = 10;
+let currentFormName = null, currentFormSpecId = null;
+let editingSubId = null, editingSubFields = [];
+let currentUser = null;
+
+// ═══════════════════════ INIT ═══════════════════════
+window.onload = async () => {
+  // Always start as Sign In — never auto-restore session on page load
+  document.getElementById('main-pill').classList.add('guest');
+  document.getElementById('u-av-text').style.display = 'none';
+  document.getElementById('u-pill-name').textContent = 'Sign In';
+  document.getElementById('u-arr').textContent = '→';
+  // Also clear any server-side session so the state is truly fresh
+  try { await fetch('/auth/logout', { method: 'POST' }); } catch(e) {}
+  updateLockedState();
+  loadForms();
+  loadAllSubs();
+};
+
+// ═══════════════════════ NAV ═══════════════════════
+function goTab(name, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('show'));
+  document.querySelectorAll('.sb-link').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('show');
+  if (btn) btn.classList.add('active');
+  updateLockedState();
+  if (name === 'submissions') loadAllSubs();
+  if (name === 'forms') loadForms();
+  if (name === 'profile') { updateLockedState(); if(currentUser) updateProfileUI(); }
+}
+
+function updateLockedState() {
+  const loggedIn = !!currentUser;
+
+  // Submissions
+  document.getElementById('subs-locked').style.display = loggedIn ? 'none' : 'block';
+  document.getElementById('subs-content').style.display = loggedIn ? 'block' : 'none';
+
+  // Forms
+  document.getElementById('forms-locked').style.display = loggedIn ? 'none' : 'block';
+  document.getElementById('forms-content').style.display = loggedIn ? 'block' : 'none';
+
+  // Profile
+  document.getElementById('profile-locked').style.display = loggedIn ? 'none' : 'block';
+  document.getElementById('profile-content').style.display = loggedIn ? 'block' : 'none';
+  if (loggedIn && currentUser) updateProfileUI();
+}
+
+// ═══════════════════════ AUTH MODAL ═══════════════════════
+function openAuth(tab) {
+  switchAuthTab(tab || 'signin');
+  document.getElementById('auth-modal').classList.add('open');
+}
+
+function closeAuth() {
+  document.getElementById('auth-modal').classList.remove('open');
+}
+
+function switchAuthTab(tab) {
+  document.getElementById('signin-form').style.display = tab === 'signin' ? 'block' : 'none';
+  document.getElementById('signup-form').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
+  document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+  clearAuthErrors();
+}
+
+function clearAuthErrors() {
+  ['si-err','su-err'].forEach(id => {
+    const el = document.getElementById(id);
+    el.textContent = ''; el.classList.remove('show');
+  });
+  ['si-email','si-password','su-name','su-email','su-password'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('err');
+  });
+}
+
+function showAuthErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.classList.add('show');
+}
+
+async function doSignIn() {
+  const email = document.getElementById('si-email').value.trim();
+  const pass = document.getElementById('si-password').value;
+  if (!email || !pass) { showAuthErr('si-err', 'Please fill in all fields.'); return; }
+  const btn = document.getElementById('si-btn');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    const r = await fetch('/auth/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email, password: pass})
+    });
+    const d = await r.json();
+    if (d.error) {
+      showAuthErr('si-err', 'No account found with these credentials. Please check your email and password.');
+      return;
+    }
+    applyUser(d.user);
+    closeAuth();
+    updateLockedState();
+    loadForms(); loadAllSubs();
+  } catch(e) { showAuthErr('si-err', 'Network error. Try again.'); }
+  finally { btn.disabled = false; btn.textContent = 'Sign In'; }
+}
+
+async function doSignUp() {
+  const name = document.getElementById('su-name').value.trim();
+  const email = document.getElementById('su-email').value.trim();
+  const pass = document.getElementById('su-password').value;
+  if (!name || !email || !pass) { showAuthErr('su-err', 'Please fill in all fields.'); return; }
+  if (pass.length < 6) { showAuthErr('su-err', 'Password must be at least 6 characters.'); return; }
+  const btn = document.getElementById('su-btn');
+  btn.disabled = true; btn.textContent = 'Creating…';
+  try {
+    const r = await fetch('/auth/register', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name, email, password: pass})
+    });
+    const d = await r.json();
+    if (d.error) { showAuthErr('su-err', d.error); return; }
+    applyUser(d.user);
+    closeAuth();
+    updateLockedState();
+    loadForms(); loadAllSubs();
+  } catch(e) { showAuthErr('su-err', 'Network error. Try again.'); }
+  finally { btn.disabled = false; btn.textContent = 'Create Account'; }
+}
+
+function applyUser(user) {
+  currentUser = user;
+  const initials = user.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('u-av-text').textContent = initials;
+  document.getElementById('u-av-text').style.background = 'linear-gradient(135deg,#3d3730,#7c6f5e)';
+  document.getElementById('main-pill').classList.remove('guest');
+  document.getElementById('u-av-text').style.display = 'flex';
+  document.getElementById('u-av-text').style.color = '#fff';
+  document.getElementById('u-pill-name').textContent = user.name.split(' ')[0];
+  document.getElementById('u-arr').textContent = '▾';
+  document.getElementById('dd-av-text').textContent = initials;
+  document.getElementById('dd-name').textContent = user.name;
+  document.getElementById('dd-email').textContent = user.email;
+  document.getElementById('udd-out').style.display = 'none';
+  document.getElementById('udd-in').style.display = 'none';
+}
+
+function updateProfileUI() {
+  if (!currentUser) return;
+  const initials = currentUser.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('prof-avatar').textContent = initials;
+  document.getElementById('prof-name').textContent = currentUser.name;
+  document.getElementById('prof-email').textContent = currentUser.email;
+  document.getElementById('prof-name-val').textContent = currentUser.name;
+  document.getElementById('prof-email-val').textContent = currentUser.email;
+  document.getElementById('prof-joined').textContent = 'Member since ' + (currentUser.created_at ? new Date(currentUser.created_at).toLocaleDateString('en-US',{month:'long',year:'numeric'}) : '—');
+  // Update stats from badges
+  document.getElementById('prof-forms-count').textContent = document.getElementById('badge-forms').textContent || '0';
+  document.getElementById('prof-subs-count').textContent = document.getElementById('badge-subs').textContent || '0';
+}
+
+async function signOut() {
+  if (!confirm('Are you sure you want to sign out?')) return;
+  await fetch('/auth/logout', {method:'POST'});
+  currentUser = null;
+  closeAllDD();
+  // Reset pill to Sign In
+  document.getElementById('main-pill').classList.add('guest');
+  document.getElementById('u-av-text').style.display = 'none';
+  document.getElementById('u-pill-name').textContent = 'Sign In';
+  document.getElementById('u-arr').textContent = '→';
+  // Reset to generate page and hide any generated form
+  goTab('generate', document.getElementById('nav-gen'));
+  document.getElementById('form-wrap').style.display = 'none';
+  document.getElementById('form-card').innerHTML = '';
+  document.getElementById('prompt-input').value = '';
+  updateLockedState();
+  allSubs = []; filteredSubs = [];
+  renderSubsTable();
+  document.getElementById('badge-subs').textContent = '0';
+  document.getElementById('badge-forms').textContent = '0';
+  document.getElementById('forms-grid').innerHTML = '<div style="color:var(--muted);font-size:.85rem;padding:20px 0;">No forms yet — generate one!</div>';
+}
+
+function toggleDD() {
+  if (currentUser) {
+    const dd = document.getElementById('udd-in');
+    const isOpen = dd.style.display === 'block';
+    closeAllDD();
+    if (!isOpen) dd.style.display = 'block';
+  } else {
+    const dd = document.getElementById('udd-out');
+    const isOpen = dd.style.display === 'block';
+    closeAllDD();
+    if (!isOpen) dd.style.display = 'block';
+  }
+}
+function closeAllDD() {
+  document.getElementById('udd-out').style.display = 'none';
+  document.getElementById('udd-in').style.display = 'none';
+}
+document.addEventListener('click', e => {
+  const ua = document.querySelector('.user-area');
+  if (ua && !ua.contains(e.target)) closeAllDD();
+});
+
+// Close auth modal on backdrop click
+document.getElementById('auth-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeAuth();
+});
+
+// ═══════════════════════ GENERATE ═══════════════════════
+function setPrompt(t) {
+  document.getElementById('prompt-input').value = t;
+  document.getElementById('prompt-input').focus();
+}
+
+async function doGenerate() {
+  const input = document.getElementById('prompt-input');
+  const msg = input.value.trim();
+  if (!msg) { input.focus(); return; }
+
+  const btn = document.getElementById('gen-btn');
+  const txt = document.getElementById('gen-txt');
+  const sp  = document.getElementById('gen-spin');
+  btn.disabled = true; txt.style.display = 'none'; sp.style.display = 'block';
+  document.getElementById('form-wrap').style.display = 'none';
+
+  try {
+    const res = await fetch('/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message: msg})
+    });
+    const data = await res.json();
+    if (data.error) { showToast('Error: ' + data.error); return; }
+    currentFormName = data.form_name;
+    currentFormSpecId = data.form_spec_id;
+    renderForm(data.json_schema, data.form_name, data.form_spec_id);
+    loadForms(); loadAllSubs();
+  } catch(e) { showToast('Error: ' + e.message); }
+  finally { btn.disabled = false; txt.style.display = 'block'; sp.style.display = 'none'; }
+}
+
+// ═══════════════════════ RENDER FORM ═══════════════════════
+function renderForm(schema, formName, formSpecId) {
+  const card = document.getElementById('form-card');
+  card.innerHTML = '';
+  const wrap = document.getElementById('form-wrap');
+  const title = schema.title || 'Generated Form';
+  const props = schema.properties || {};
+  const req   = schema.required || [];
+
+  const ttl = document.createElement('div');
+  ttl.className = 'fcard-title'; ttl.textContent = title;
+  card.appendChild(ttl);
+  const sub = document.createElement('div');
+  sub.className = 'fcard-sub'; sub.textContent = 'Fill in the details and submit';
+  card.appendChild(sub);
+
+  const fields = Object.entries(props).sort((a,b) => fieldPriority(a[0]) - fieldPriority(b[0]));
+  const fieldNames = fields.map(f => f[0]);
+
+  fields.forEach(([name, info]) => {
+    const fg = document.createElement('div'); fg.className = 'fg';
+    const label = document.createElement('label');
+    label.className = 'fl'; label.htmlFor = 'ff-' + name;
+    const readable = name.replace(/([A-Z])/g,' $1').replace(/^./,c=>c.toUpperCase());
+    label.innerHTML = readable + (req.includes(name) ? ' <span class="fr">*</span>' : '');
+    fg.appendChild(label);
+
+    let inp;
+    if (info.enum) {
+      inp = document.createElement('select'); inp.className = 'fs';
+      inp.id = 'ff-' + name; inp.name = name;
+      const blank = document.createElement('option');
+      blank.value = ''; blank.textContent = '— Select —'; inp.appendChild(blank);
+      info.enum.forEach(o => { const opt = document.createElement('option'); opt.value=o; opt.textContent=o; inp.appendChild(opt); });
+      fg.appendChild(inp);
+      if (info.enum.includes('Other')) {
+        const oi = document.createElement('input');
+        oi.className = 'fi'; oi.type = 'text'; oi.id = 'ff-other-' + name;
+        oi.placeholder = 'Please specify…'; oi.style.marginTop = '8px'; oi.style.display = 'none';
+        inp.addEventListener('change', function() { oi.style.display = this.value==='Other'?'block':'none'; if(this.value==='Other')oi.focus();else oi.value=''; });
+        fg.appendChild(oi);
+      }
+    } else {
+      inp = document.createElement('input'); inp.className = 'fi';
+      inp.id = 'ff-' + name; inp.name = name;
+      if (info.format==='date') inp.type='date';
+      else if (info.format==='email') inp.type='email';
+      else if (info.type==='integer'||info.type==='number') inp.type='number';
+      else inp.type='text';
+      inp.placeholder = 'Enter ' + readable.toLowerCase() + '…';
+      if (req.includes(name)) inp.required = true;
+      fg.appendChild(inp);
+    }
+    card.appendChild(fg);
+  });
+
+  const btn = document.createElement('button'); btn.className = 'sbtn'; btn.textContent = 'Submit';
+  btn.onclick = async function(e) {
+    e.preventDefault();
+    const data = {}; let valid = true;
+    fieldNames.forEach(name => {
+      const el = document.getElementById('ff-'+name); if(!el) return;
+      if (el.required && !el.value) { el.classList.add('err'); valid=false; }
+      else {
+        el.classList.remove('err');
+        if (el.tagName==='SELECT' && el.value==='Other') {
+          const oi = document.getElementById('ff-other-'+name);
+          data[name] = oi?.value.trim() || 'Other';
+        } else data[name] = el.value;
+      }
+    });
+    if (!valid) { showToast('Please fill in all required fields.'); return; }
+    try {
+      await fetch('/submit_form/'+formSpecId, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+      const toast = document.getElementById('form-toast-el'); toast.style.display='block';
+      fieldNames.forEach(n=>{ const el=document.getElementById('ff-'+n); if(el) el.value=''; });
+      setTimeout(()=>toast.style.display='none', 3000);
+      loadAllSubs();
+    } catch(e) { showToast('Submit error: '+e.message); }
+  };
+  card.appendChild(btn);
+
+  const toastEl = document.createElement('div');
+  toastEl.id = 'form-toast-el'; toastEl.className = 'form-toast';
+  toastEl.textContent = '✓ Form submitted successfully!';
+  card.appendChild(toastEl);
+
+  wrap.style.display = 'flex';
+  wrap.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function fieldPriority(f) {
+  const fl = f.toLowerCase();
+  if (fl.includes("name")) return 1;
+  if (fl.includes("email")) return 2;
+  if (fl.includes("phone")||fl.includes("contact")) return 3;
+  if (fl.includes("age")) return 4;
+  if (fl.includes("team")||fl.includes("department")||fl.includes("division")) return 5;
+  if (fl.includes("designation")||fl.includes("role")||fl.includes("position")||fl.includes("title")) return 6;
+  if (fl.includes("class")||fl.includes("grade")||fl.includes("category")) return 7;
+  if (fl.includes("type")||fl.includes("leave")) return 8;
+  if (fl.includes("subject")||fl.includes("song")) return 9;
+  if (fl.includes("description")||fl.includes("reason")||fl.includes("notes")||fl.includes("comment")) return 10;
+  if (fl.includes("join")||fl.includes("start")||fl.includes("from")) return 11;
+  if (fl.includes("date")||fl.includes("time")) return 12;
+  if (fl.includes("end")) return 13;
+  return 15;
+}
+
+// ═══════════════════════ SUBMISSIONS ═══════════════════════
+async function loadAllSubs() {
+  if (!currentUser) return;
+  const res = await fetch('/api/submissions');
+  allSubs = await res.json(); filteredSubs = [...allSubs];
+  currentPage = 1; renderSubsTable(); updateBadges(); populateFormFilter();
+}
+
+function populateFormFilter() {
+  const sel = document.getElementById('form-filter');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">All Forms</option>';
+  const seen = new Set();
+  allSubs.forEach(s => {
+    if (!seen.has(s.form_spec_id)) {
+      seen.add(s.form_spec_id);
+      const opt = document.createElement('option');
+      opt.value = s.form_spec_id; opt.textContent = s.form_title; sel.appendChild(opt);
+    }
+  });
+  sel.value = current;
+}
+
+function filterSubs() {
+  const q = document.getElementById('sub-search').value.toLowerCase();
+  const fid = document.getElementById('form-filter').value;
+  filteredSubs = allSubs.filter(s => {
+    const matchQ = !q || JSON.stringify(s).toLowerCase().includes(q);
+    const matchF = !fid || s.form_spec_id == fid;
+    return matchQ && matchF;
+  });
+  currentPage = 1; renderSubsTable();
+}
+
+function renderSubsTable() {
+  const tbody = document.getElementById('subs-tbody');
+  document.getElementById('sub-count').textContent = filteredSubs.length;
+  if (!filteredSubs.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">No submissions found</td></tr>';
+    document.getElementById('pager-info').textContent = 'Showing 0 entries';
+    document.getElementById('pager-btns').innerHTML = ''; return;
+  }
+  const total = filteredSubs.length, pages = Math.ceil(total/PAGE);
+  const start = (currentPage-1)*PAGE, pageData = filteredSubs.slice(start, start+PAGE);
+  tbody.innerHTML = pageData.map(s => {
+    const entries = Object.entries(s.data);
+    const preview = entries.slice(0,1).map(([k,v])=>`${k}: ${v}`).join(', ');
+    const dt = s.submitted_at ? s.submitted_at.replace('T',' ').slice(0,16) : '—';
+    return `<tr>
+      <td><span class="t-id">#${s.submission_id}</span></td>
+      <td><div class="t-fnm">${s.form_title}</div></td>
+      <td><span class="t-prev">${preview}</span></td>
+      <td class="t-time">${dt.replace(' ','<br/>')}</td>
+      <td><span class="pill ok">submitted</span></td>
+      <td><div class="abtns">
+        <button class="ab view" onclick="openViewModal(${s.submission_id})">View</button>
+        <button class="ab edit" onclick="openEditModal(${s.submission_id})">Edit</button>
+        <button class="ab del" onclick="deleteSub(${s.submission_id})">🗑</button>
+      </div></td></tr>`;
+  }).join('');
+  document.getElementById('pager-info').textContent = `Showing ${start+1}–${Math.min(start+PAGE,total)} of ${total}`;
+  let btns = `<div class="pg${currentPage===1?' active':''}" onclick="goPg(${currentPage-1})">‹</div>`;
+  for (let i=1; i<=pages; i++) btns += `<div class="pg${i===currentPage?' active':''}" onclick="goPg(${i})">${i}</div>`;
+  btns += `<div class="pg${currentPage===pages?' active':''}" onclick="goPg(${currentPage+1})">›</div>`;
+  document.getElementById('pager-btns').innerHTML = btns;
+}
+
+function goPg(p) {
+  const pages = Math.ceil(filteredSubs.length/PAGE);
+  if (p<1||p>pages) return;
+  currentPage=p; renderSubsTable();
+}
+
+function openViewModal(subId) {
+  const sub = allSubs.find(s=>s.submission_id===subId); if(!sub) return;
+  document.getElementById('view-modal-title').textContent = `Submission #${subId} — ${sub.form_title}`;
+  const body = document.getElementById('view-modal-body');
+  body.innerHTML = Object.entries(sub.data).map(([k,v])=>`
+    <div class="m-row">
+      <div class="m-key">${k.replace(/([A-Z])/g,' $1').trim()}</div>
+      <div class="m-val">${v===true?'✓ Yes':v===false?'✗ No':(v||'—')}</div>
+    </div>`).join('') +
+    `<div class="m-row"><div class="m-key">Submitted At</div><div class="m-val" style="font-family:'DM Mono',monospace;font-size:.8rem;">${sub.submitted_at||'—'}</div></div>`;
+  document.getElementById('view-edit-btn').onclick = () => { closeModal('view-modal'); openEditModal(subId); };
+  openModal('view-modal');
+}
+
+async function openEditModal(subId) {
+  const sub = allSubs.find(s=>s.submission_id===subId); if(!sub) return;
+  editingSubId = subId;
+  document.getElementById('edit-modal-title').textContent = `Edit #${subId} — ${sub.form_title}`;
+  let fields = [];
+  try { const r = await fetch(`/api/forms/${sub.form_spec_id}/fields`); fields = await r.json(); } catch(e) {}
+  editingSubFields = fields;
+  const body = document.getElementById('edit-modal-body');
+  if (fields.length) {
+    body.innerHTML = fields.map(f => {
+      const lbl = f.fieldLabel.replace(/([A-Z])/g,' $1').replace(/^./,c=>c.toUpperCase());
+      const val = sub.data[f.fieldLabel]||'';
+      if (f.fieldOptions&&f.fieldOptions.length) {
+        const opts = f.fieldOptions.map(o=>`<option value="${o}"${val===o?' selected':''}>${o}</option>`).join('');
+        const hasOther = f.fieldOptions.includes('Other');
+        const isOther = val === 'Other' || (hasOther && !f.fieldOptions.includes(val) && val !== '');
+        const selectVal = isOther ? 'Other' : val;
+        const otherVal = isOther ? val : '';
+        return `<div class="eg"><label class="el">${lbl}${f.isRequired?'<span class="fr"> *</span>':''}</label><select class="es" id="ef-${f.fieldLabel}"${hasOther?` onchange="editOther(this,'ef-other-${f.fieldLabel}')"`:''}><option value="">— Select —</option>${opts.replace('value="'+selectVal+'"','value="'+selectVal+'" selected')}</select>${hasOther?`<input class="ei" id="ef-other-${f.fieldLabel}" placeholder="Please specify…" value="${otherVal}" style="margin-top:8px;display:${selectVal==='Other'?'block':'none'}"/>`:''}</div>`;
+      }
+      const tp = f.fieldType==='date'?'date':f.fieldType==='email'?'email':f.fieldType==='integer'||f.fieldType==='number'?'number':'text';
+      return `<div class="eg"><label class="el">${lbl}${f.isRequired?'<span class="fr"> *</span>':''}</label><input class="ei" id="ef-${f.fieldLabel}" type="${tp}" value="${val}"/></div>`;
+    }).join('');
+  } else {
+    body.innerHTML = Object.entries(sub.data).map(([k,v])=>`<div class="eg"><label class="el">${k.replace(/([A-Z])/g,' $1').replace(/^./,c=>c.toUpperCase())}</label><input class="ei" id="ef-${k}" type="text" value="${v}"/></div>`).join('');
+  }
+  document.getElementById('edit-save-btn').onclick = ()=>saveEdit(sub);
+  openModal('edit-modal');
+}
+
+async function saveEdit(sub) {
+  const newData={};
+  const keys = editingSubFields.length ? editingSubFields.map(f=>f.fieldLabel) : Object.keys(sub.data);
+  keys.forEach(k=>{
+    const el=document.getElementById('ef-'+k); if(!el) return;
+    if(el.tagName==='SELECT' && el.value==='Other'){
+      const oi=document.getElementById('ef-other-'+k);
+      newData[k]=oi?.value.trim()||'Other';
+    } else { newData[k]=el.value; }
+  });
+  try {
+    const res = await fetch(`/api/submissions/${editingSubId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(newData)});
+    const d = await res.json();
+    if (!res.ok) { showToast('Error: ' + (d.error||'Update failed')); return; }
+    closeModal('edit-modal');
+    loadAllSubs();
+    loadForms();
+  } catch(e) { showToast('Error saving: '+e.message); }
+}
+
+async function deleteSub(subId) {
+  if (!confirm('Delete submission #'+subId+' permanently from the database?')) return;
+  try {
+    const res = await fetch(`/api/submissions/${subId}`,{method:'DELETE'});
+    const d = await res.json();
+    if (!res.ok) { showToast('Error: ' + (d.error||'Delete failed')); return; }
+    showToast('🗑 Submission #'+subId+' deleted from database.');
+    loadAllSubs();
+    loadForms();
+  } catch(e) { showToast('Error deleting: '+e.message); }
+}
+
+// ═══════════════════════ FORMS ═══════════════════════
+async function loadForms() {
+  if (!currentUser) return;
+  const res = await fetch('/api/forms');
+  const forms = await res.json();
+  updateBadges(forms);
+  const grid = document.getElementById('forms-grid');
+  if (!forms.length) { grid.innerHTML = '<div style="color:var(--muted);font-size:.85rem;padding:20px 0;">No forms yet — generate one!</div>'; return; }
+  grid.innerHTML = forms.map(f=>`
+    <div class="form-card">
+      <div class="fc-title">${f.title}</div>
+      <div class="fc-name"># ${f.form_spec_name}</div>
+      <div class="fc-meta">📬 ${f.sub_count} submission${f.sub_count!==1?'s':''}</div>
+      <div class="fc-btns">
+        <div class="fc-btn pri" onclick="openFillModal(${f.form_spec_id},'${esc(f.title)}','${esc(f.form_spec_name)}')">Fill Form</div>
+        <div class="fc-btn" onclick="viewFormSubs(${f.form_spec_id})">Submissions</div>
+        <div class="fc-btn" style="flex:0;padding:7px 10px;" title="Delete" onclick="deleteForm(${f.form_spec_id})">🗑</div>
+      </div>
+    </div>`).join('');
+}
+
+function esc(s){return(s||'').replace(/'/g,"\\'");}
+
+async function updateBadges(forms) {
+  if (!forms) { const res=await fetch('/api/forms'); forms=await res.json(); }
+  const totalSubs = forms.reduce((a,f)=>a+f.sub_count,0);
+  document.getElementById('badge-forms').textContent = forms.length;
+  document.getElementById('badge-subs').textContent = totalSubs;
+  if (currentUser) updateProfileUI();
+}
+
+async function openFillModal(formSpecId, title, formName) {
+  document.getElementById('fill-modal-title').textContent = title;
+  const body = document.getElementById('fill-modal-body');
+  body.innerHTML = '<div style="color:var(--muted);font-size:.85rem;padding:10px 0;">Loading fields…</div>';
+  openModal('fill-modal');
+  const res = await fetch(`/api/forms/${formSpecId}/fields`);
+  const fields = await res.json();
+  if (!fields.length) { body.innerHTML='<div style="color:var(--muted);">No fields found.</div>'; return; }
+  const fieldNames = fields.map(f=>f.fieldLabel);
+  body.innerHTML = fields.map(f=>{
+    const lbl = f.fieldLabel.replace(/([A-Z])/g,' $1').replace(/^./,c=>c.toUpperCase());
+    if (f.fieldOptions&&f.fieldOptions.length) {
+      const hasOther = f.fieldOptions.includes('Other');
+      const opts = f.fieldOptions.map(o=>`<option value="${o}">${o}</option>`).join('');
+      return `<div class="eg"><label class="el">${lbl}${f.isRequired?'<span class="fr"> *</span>':''}</label><select class="es" id="mf-${f.fieldLabel}"${hasOther?` onchange="fillOther(this,'mf-other-${f.fieldLabel}')"`:''}><option value="">— Select —</option>${opts}</select>${hasOther?`<input class="ei" id="mf-other-${f.fieldLabel}" placeholder="Please specify…" style="margin-top:8px;display:none"/>`:''}</div>`;
+    }
+    const tp=f.fieldType==='date'?'date':f.fieldType==='email'?'email':f.fieldType==='integer'||f.fieldType==='number'?'number':'text';
+    return `<div class="eg"><label class="el">${lbl}${f.isRequired?'<span class="fr"> *</span>':''}</label><input class="ei" id="mf-${f.fieldLabel}" type="${tp}" placeholder="Enter ${lbl.toLowerCase()}…"${f.isRequired?' required':''}/></div>`;
+  }).join('') +
+  `<button class="sbtn" onclick="submitFillModal(${formSpecId},${JSON.stringify(fieldNames)})">Submit</button>
+   <div id="fill-toast" class="form-toast" style="margin-top:8px;">✓ Submitted successfully!</div>`;
+}
+
+function fillOther(sel,inputId){const el=document.getElementById(inputId);if(!el)return;el.style.display=sel.value==='Other'?'block':'none';if(sel.value==='Other')el.focus();else el.value='';}
+function editOther(sel,inputId){const el=document.getElementById(inputId);if(!el)return;el.style.display=sel.value==='Other'?'block':'none';if(sel.value==='Other')el.focus();else el.value='';}
+
+async function submitFillModal(formSpecId,keys){
+  const data={};
+  keys.forEach(k=>{const el=document.getElementById('mf-'+k);if(!el)return;if(el.tagName==='SELECT'&&el.value==='Other'){const oi=document.getElementById('mf-other-'+k);data[k]=oi?.value.trim()||'Other';}else data[k]=el.value;});
+  await fetch('/submit_form/'+formSpecId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  const t=document.getElementById('fill-toast');t.style.display='block';
+  setTimeout(()=>{t.style.display='none';closeModal('fill-modal');loadForms();loadAllSubs();},1500);
+}
+
+function viewFormSubs(formSpecId){goTab('submissions',document.getElementById('nav-sub'));document.getElementById('form-filter').value=formSpecId;filterSubs();}
+
+async function deleteForm(formSpecId){
+  if(!confirm('Delete this form and ALL its submissions permanently?'))return;
+  try {
+    const res = await fetch(`/api/forms/${formSpecId}`,{method:'DELETE'});
+    const d = await res.json();
+    if (!res.ok) { showToast('Error: '+(d.error||'Delete failed')); return; }
+    showToast('🗑 Form and all its submissions deleted from database.');
+    loadForms();
+    loadAllSubs();
+  } catch(e) { showToast('Error deleting form: '+e.message); }
+}
+
+function exportCSV(){
+  if(!filteredSubs.length){showToast('No submissions to export.');return;}
+  const keys=[...new Set(filteredSubs.flatMap(s=>Object.keys(s.data)))];
+  let csv=['submission_id','form_title',...keys,'submitted_at'].join(',')+'\n';
+  filteredSubs.forEach(s=>{const row=[s.submission_id,`"${s.form_title}"`,...keys.map(k=>`"${(s.data[k]??'').toString().replace(/"/g,'""')}"`),s.submitted_at];csv+=row.join(',')+'\n';});
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='submissions.csv';a.click();
+}
+
+// ═══════════════════════ MODAL HELPERS ═══════════════════════
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
+
+// ═══════════════════════ TOAST ═══════════════════════
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast-el');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3200);
+}
+</script>
+</body>
+</html>
