@@ -1,0 +1,194 @@
+body{
+margin:0;
+font-family:Inter, Arial;
+background:#e8e1d8;
+}
+
+/* Layout */
+
+.layout{
+display:flex;
+}
+
+/* Sidebar */
+
+.sidebar{
+width:220px;
+background:#f5efe6;
+height:100vh;
+padding:25px;
+}
+
+.logo{
+font-size:20px;
+font-weight:700;
+margin-bottom:30px;
+}
+
+.menu-item{
+font-size:14px;
+margin:12px 0;
+cursor:pointer;
+color:#4b3e34;
+}
+
+.menu-item.active{
+background:#3c342d;
+color:white;
+padding:8px 12px;
+border-radius:8px;
+}
+
+
+/* Main */
+
+.main{
+flex:1;
+padding:40px;
+}
+
+
+/* Topbar */
+
+.topbar{
+display:flex;
+justify-content:flex-end;
+position:relative;
+}
+
+
+/* Sign in button */
+
+.signin-btn{
+background:#3c342d;
+color:white;
+border:none;
+padding:8px 16px;
+border-radius:14px;
+font-size:14px;
+font-weight:600;
+cursor:pointer;
+}
+
+.signin-btn:hover{
+background:#2a241e;
+}
+
+
+/* Hero section */
+
+.hero{
+text-align:center;
+margin-top:40px;
+}
+
+/* Heading like screenshot */
+
+.hero-title{
+font-size:54px;
+font-weight:900;
+line-height:1.1;
+color:#2c2219;
+margin-bottom:12px;
+}
+
+.subtitle{
+color:#6e645b;
+margin-bottom:25px;
+}
+
+
+/* Prompt box */
+
+.prompt-box{
+display:flex;
+justify-content:center;
+gap:10px;
+margin-bottom:12px;
+}
+
+#prompt{
+width:420px;
+padding:12px;
+border-radius:10px;
+border:1px solid #ccc;
+font-size:14px;
+}
+
+/* Generate button */
+
+.generate-btn{
+background:#3c342d;
+color:white;
+border:none;
+padding:12px 20px;
+border-radius:10px;
+font-weight:600;
+cursor:pointer;
+}
+
+.generate-btn:hover{
+background:#2a241e;
+}
+
+
+/* Quick buttons */
+
+.quick-buttons{
+margin-top:8px;
+}
+
+.quick-buttons button{
+background:white;
+border:1px solid #ddd;
+padding:8px 14px;
+border-radius:18px;
+margin:4px;
+cursor:pointer;
+font-size:13px;
+}
+
+
+/* Login popup */
+
+.login-box{
+display:none;
+position:absolute;
+top:90px;        /* pushes popup DOWN */
+right:20px;
+background:white;
+padding:20px;
+border-radius:14px;
+box-shadow:0 10px 25px rgba(0,0,0,0.15);
+width:260px;
+z-index:10;
+}
+
+/* Inputs */
+
+.login-box input{
+width:100%;
+padding:12px;
+margin-bottom:12px;
+border-radius:8px;
+border:1px solid #ddd;
+font-size:14px;
+box-sizing:border-box;
+}
+
+/* Login button */
+
+.login-box button{
+width:100%;
+background:#3c342d;
+color:white;
+border:none;
+padding:12px;
+border-radius:8px;
+font-weight:600;
+cursor:pointer;
+}
+
+.login-box button:hover{
+background:#2a241e;
+}
