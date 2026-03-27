@@ -1,0 +1,81 @@
+Example 1:
+User: Generate a leave application schema
+Output:
+
+{
+  "reply": "Leave application schema",
+  "json_schema": {
+    "type": "object",
+    "title": "Leave Application",
+    "properties": {
+      "employeeName": { "type": "string" },
+      "team": { "type": "string", "enum": ["Web Development", "DevOps", "Testing", "Mobile Application Team", "Other"] },
+      "designation": { "type": "string", "enum": ["Intern", "Developer", "Manager", "HR", "Other"] },
+      "leaveType": { "type": "string", "enum": ["Casual Leave", "Sick Leave", "Other"] },
+      "startDate": { "type": "string", "format": "date" },
+      "endDate": { "type": "string", "format": "date" }
+    },
+    "required": ["employeeName", "team", "designation", "leaveType", "startDate", "endDate"]
+  },
+  "ui_schema": {
+    "team": { "ui:widget": "select" },
+    "designation": { "ui:widget": "select" },
+    "leaveType": { "ui:widget": "select" },
+    "startDate": { "ui:widget": "date" },
+    "endDate": { "ui:widget": "date" }
+  }
+}
+
+
+Example 2:
+User: Generate employee onboarding schema
+Output:
+
+{
+  "reply": "Employee onboarding schema",
+  "json_schema": {
+    "type": "object",
+    "title": "Employee Onboarding",
+    "properties": {
+      "employeeName": { "type": "string" },
+      "email": { "type": "string", "format": "email" },
+      "team": { "type": "string", "enum": ["Web Development", "DevOps", "Testing", "Mobile Application Team", "Other"] },
+      "designation": { "type": "string", "enum": ["Intern", "Developer", "Manager", "HR", "Other"] },
+      "joiningDate": { "type": "string", "format": "date" },
+      "endDate": { "type": "string", "format": "date" }
+    },
+    "required": ["employeeName", "email", "team", "designation", "joiningDate", "endDate"]
+  },
+  "ui_schema": {
+    "team": { "ui:widget": "select" },
+    "designation": { "ui:widget": "select" },
+    "joiningDate": { "ui:widget": "date" },
+    "endDate": { "ui:widget": "date" }
+  }
+}
+
+
+Example 3:
+User: Job application form
+Output:
+
+{
+  "reply": "Job application form",
+  "json_schema": {
+    "type": "object",
+    "title": "Job Application",
+    "properties": {
+      "fullName": { "type": "string" },
+      "email": { "type": "string", "format": "email" },
+      "phone": { "type": "string" },
+      "position": { "type": "string", "enum": ["Frontend Developer", "Backend Developer", "Designer", "Manager", "Other"] },
+      "experienceYears": { "type": "integer" },
+      "availableFrom": { "type": "string", "format": "date" }
+    },
+    "required": ["fullName", "email", "position"]
+  },
+  "ui_schema": {
+    "position": { "ui:widget": "select" },
+    "availableFrom": { "ui:widget": "date" }
+  }
+}
